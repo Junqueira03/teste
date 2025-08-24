@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Escola One</title>
+  <link rel="stylesheet" href="design-system.css">
+  <style>
+    body {
+      background: hsl(var(--background));
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .header {
+      background: hsl(var(--card));
+      border-bottom: 1px solid hsl(var(--border));
+      padding: 1rem 2rem;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+      box-sizing: border-box;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo {
+      width: 50px;
+      height: 50px;
+      border-radius: calc(var(--radius) * 2);
+      overflow: hidden;
+      background: hsl(var(--primary) / 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+    }
+
+    .brand-text .brand {
+      color: hsl(var(--primary));
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .header-nav .nav-link {
+      color: hsl(var(--muted-foreground));
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+
+    .header-nav .nav-link:hover,
+    .header-nav .nav-link.active {
+      color: hsl(var(--primary));
+      background: hsl(var(--primary) / 0.1);
+    }
+
+    .header-nav .nav-link.active {
+      font-weight: 600;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-top: 70px;
+      padding: 2rem;
+      min-height: calc(100vh - 70px);
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+      margin: 0 0 0.5rem 0;
+    }
+
+    .page-subtitle {
+      color: hsl(var(--muted-foreground));
+      font-size: 1.125rem;
+      margin: 0;
+    }
+
+    /* Dashboard Cards */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-card {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) * 2);
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px hsl(var(--primary) / 0.15);
+      border-color: hsl(var(--primary) / 0.3);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: calc(var(--radius) * 1.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: hsl(var(--primary) / 0.1);
+      color: hsl(var(--primary));
+    }
+
+    .card-icon.students { background: hsl(120 100% 95%); color: hsl(120 100% 40%); }
+    .card-icon.guardians { background: hsl(220 100% 95%); color: hsl(220 100% 50%); }
+    .card-icon.teachers { background: hsl(45 100% 95%); color: hsl(45 100% 50%); }
+    .card-icon.classes { background: hsl(280 100% 95%); color: hsl(280 100% 50%); }
+
+    [data-theme="dark"] .card-icon.students { background: hsl(120 100% 10%); color: hsl(120 100% 60%); }
+    [data-theme="dark"] .card-icon.guardians { background: hsl(220 100% 10%); color: hsl(220 100% 60%); }
+    [data-theme="dark"] .card-icon.teachers { background: hsl(45 100% 10%); color: hsl(45 100% 60%); }
+    [data-theme="dark"] .card-icon.classes { background: hsl(280 100% 10%); color: hsl(280 100% 60%); }
+
+    .card-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .card-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: hsl(var(--muted-foreground));
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0;
+    }
+
+    .card-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+      margin: 0.5rem 0;
+      line-height: 1;
+    }
+
+    .card-description {
+      font-size: 0.875rem;
+      color: hsl(var(--muted-foreground));
+      margin: 0;
+    }
+
+    .card-trend {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .card-trend.positive { color: hsl(120 100% 40%); }
+    .card-trend.negative { color: hsl(0 100% 50%); }
+
+    /* Quick Actions */
+    .quick-actions {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) * 2);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .quick-actions h3 {
+      margin: 0 0 1rem 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: hsl(var(--foreground));
+    }
+
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .action-button {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: hsl(var(--muted) / 0.5);
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: hsl(var(--foreground));
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .action-button:hover {
+      background: hsl(var(--primary) / 0.1);
+      border-color: hsl(var(--primary) / 0.3);
+      color: hsl(var(--primary));
+      transform: translateY(-1px);
+    }
+
+    .action-button svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+      .header-nav {
+        gap: 1rem;
+      }
+      
+      .header-nav .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .header-nav {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 1rem;
+      }
+
+      .main-content {
+        padding: 1rem;
+      }
+
+      .page-title {
+        font-size: 2rem;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .actions-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background Circle -->
+          <circle cx="25" cy="25" r="25" fill="url(#logoGradient)"/>
+          
+          <!-- Book Icon -->
+          <path d="M15 18C15 16.8954 15.8954 16 17 16H33C34.1046 16 35 16.8954 35 18V32C35 33.1046 34.1046 34 33 34H17C15.8954 34 15 33.1046 15 32V18Z" fill="white" fill-opacity="0.9"/>
+          <path d="M18 20H32V22H18V20Z" fill="hsl(220 14% 96%)"/>
+          <path d="M18 24H28V26H18V24Z" fill="hsl(220 14% 96%)"/>
+          <path d="M18 28H30V30H18V28Z" fill="hsl(220 14% 96%)"/>
+          
+          <!-- Graduation Cap -->
+          <path d="M25 12L35 16L25 20L15 16L25 12Z" fill="white"/>
+          <path d="M32 18V22C32 23.1046 28.4183 24 25 24C21.5817 24 18 23.1046 18 22V18" stroke="white" stroke-width="1.5" fill="none"/>
+          
+          <!-- Number "1" -->
+          <circle cx="39" cy="12" r="6" fill="white" fill-opacity="0.9"/>
+          <text x="39" y="16" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="hsl(220 14% 20%)" text-anchor="middle">1</text>
+          
+          <!-- Gradient Definition -->
+          <defs>
+            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand">Escola</span> One
+      </div>
+    </div>
+
+    <nav class="header-nav">
+      <a href="painel.html" class="nav-link active">Home</a>
+      <a href="alunos.html" class="nav-link">Alunos</a>
+      <a href="encarregados.html" class="nav-link">Encarregados</a>
+      <a href="professores.html" class="nav-link">Professores</a>
+      <a href="disciplinas.html" class="nav-link">Disciplinas</a>
+      <a href="turmas.html" class="nav-link">Turmas</a>
+      <a href="horarios.html" class="nav-link">Horários</a>
+      <a href="#" class="nav-link" onclick="if(confirm('Tem certeza que deseja sair do sistema?')) { authManager.logout(); } return false;">Logout</a>
+    </nav>
+  </header>
+
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Bem-vindo ao sistema de gestão escolar</p>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div class="dashboard-grid">
+      <div class="dashboard-card" onclick="window.location.href='alunos.html'">
+        <div class="card-header">
+          <div class="card-icon students">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/>
+            </svg>
+          </div>
+          <h3 class="card-title">Alunos</h3>
+        </div>
+        <div class="card-value" id="studentsCount">0</div>
+        <p class="card-description">Total de alunos matriculados</p>
+        <div class="card-trend positive">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 14l5-5 5 5z"/>
+          </svg>
+          +12% este mês
+        </div>
+      </div>
+
+      <div class="dashboard-card" onclick="window.location.href='encarregados.html'">
+        <div class="card-header">
+          <div class="card-icon guardians">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/>
+              <circle cx="18" cy="8" r="3"/>
+            </svg>
+          </div>
+          <h3 class="card-title">Encarregados</h3>
+        </div>
+        <div class="card-value" id="guardiansCount">6</div>
+        <p class="card-description">Encarregados de educação</p>
+        <div class="card-trend positive">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 14l5-5 5 5z"/>
+          </svg>
+          +8% este mês
+        </div>
+      </div>
+
+      <div class="dashboard-card" onclick="window.location.href='professores.html'">
+        <div class="card-header">
+          <div class="card-icon teachers">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/>
+              <rect x="16" y="2" width="4" height="8" rx="2"/>
+            </svg>
+          </div>
+          <h3 class="card-title">Professores</h3>
+        </div>
+        <div class="card-value" id="teachersCount">5</div>
+        <p class="card-description">Professores ativos</p>
+        <div class="card-trend positive">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 14l5-5 5 5z"/>
+          </svg>
+          +3% este mês
+        </div>
+      </div>
+
+      <div class="dashboard-card" onclick="window.location.href='turmas.html'">
+        <div class="card-header">
+          <div class="card-icon classes">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <rect x="3" y="7" width="18" height="10" rx="2"/>
+              <rect x="7" y="3" width="10" height="4" rx="2"/>
+            </svg>
+          </div>
+          <h3 class="card-title">Turmas</h3>
+        </div>
+        <div class="card-value" id="classesCount">6</div>
+        <p class="card-description">Turmas ativas</p>
+        <div class="card-trend positive">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 14l5-5 5 5z"/>
+          </svg>
+          +5% este mês
+        </div>
+      </div>
+
+      <div class="dashboard-card" onclick="window.location.href='disciplinas.html'">
+        <div class="card-header">
+          <div class="card-icon" style="background: hsl(280 100% 95%); color: hsl(280 100% 50%);">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <rect x="4" y="4" width="16" height="16" rx="2"/>
+              <path d="M8 8h8v2H8V8Zm0 4h8v2H8v-2Z" fill="white"/>
+            </svg>
+          </div>
+          <h3 class="card-title">Disciplinas</h3>
+        </div>
+        <div class="card-value" id="subjectsCount">8</div>
+        <p class="card-description">Disciplinas cadastradas</p>
+        <div class="card-trend positive">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 14l5-5 5 5z"/>
+          </svg>
+          +2% este mês
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h3>Ações Rápidas</h3>
+      <div class="actions-grid">
+        <a href="cadastrar-aluno.html" class="action-button">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+          </svg>
+          Adicionar Aluno
+        </a>
+        <a href="cadastrar-professor.html" class="action-button">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/>
+            <rect x="16" y="2" width="4" height="8" rx="2"/>
+          </svg>
+          Adicionar Professor
+        </a>
+        <a href="cadastrar-turma.html" class="action-button">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="7" width="18" height="10" rx="2"/>
+            <rect x="7" y="3" width="10" height="4" rx="2"/>
+          </svg>
+          Adicionar Turma
+        </a>
+        <a href="cadastrar-encarregado.html" class="action-button">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4Zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/>
+            <circle cx="18" cy="8" r="3"/>
+          </svg>
+          Adicionar Encarregado
+        </a>
+        <a href="cadastrar-disciplina.html" class="action-button">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+            <path d="M8 8h8v2H8V8Zm0 4h8v2H8v-2Z" fill="white"/>
+          </svg>
+          Adicionar Disciplina
+        </a>
+        <a href="#" class="action-button">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+          </svg>
+          Gerar Relatório
+        </a>
+        <a href="#" class="action-button">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Configurações
+        </a>
+        <a href="#" class="action-button">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+          Backup de Dados
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+
+    // Load dashboard data from Supabase
+    async function loadDashboardData() {
+      try {
+        // Verificar se o Supabase está disponível
+        if (!window.supabaseClient) {
+          console.warn('Supabase não disponível, usando dados de fallback');
+          // Fallback para dados estáticos se Supabase não estiver disponível
+          document.getElementById('studentsCount').textContent = '0';
+          document.getElementById('teachersCount').textContent = '0';
+          document.getElementById('classesCount').textContent = '0';
+          document.getElementById('guardiansCount').textContent = '0';
+          document.getElementById('subjectsCount').textContent = '0';
+          return;
+        }
+
+        // Buscar dados reais do Supabase
+        console.log('Carregando dados do dashboard...');
+
+        // Calcular datas para comparação (mês atual vs mês anterior)
+        const agora = new Date();
+        const inicioMesAtual = new Date(agora.getFullYear(), agora.getMonth(), 1);
+        const inicioMesAnterior = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
+        const fimMesAnterior = new Date(agora.getFullYear(), agora.getMonth(), 0);
+
+        // Contar alunos (total e do mês anterior)
+        const { count: studentsCount, error: studentsError } = await window.supabaseClient
+          .from('alunos')
+          .select('*', { count: 'exact', head: true });
+
+        const { count: studentsLastMonth, error: studentsLastMonthError } = await window.supabaseClient
+          .from('alunos')
+          .select('*', { count: 'exact', head: true })
+          .lte('created_at', fimMesAnterior.toISOString());
+
+        if (studentsError) {
+          console.warn('Erro ao buscar alunos:', studentsError);
+        }
+
+        // Contar professores (usuários com perfil 'professor')
+        const { count: teachersCount, error: teachersError } = await window.supabaseClient
+          .from('usuario')
+          .select('*', { count: 'exact', head: true })
+          .eq('perfil', 'professor');
+
+        const { count: teachersLastMonth, error: teachersLastMonthError } = await window.supabaseClient
+          .from('usuario')
+          .select('*', { count: 'exact', head: true })
+          .eq('perfil', 'professor')
+          .lte('created_at', fimMesAnterior.toISOString());
+
+        if (teachersError) {
+          console.warn('Erro ao buscar professores:', teachersError);
+        }
+
+        // Contar turmas
+        const { count: classesCount, error: classesError } = await window.supabaseClient
+          .from('turma')
+          .select('*', { count: 'exact', head: true });
+
+        const { count: classesLastMonth, error: classesLastMonthError } = await window.supabaseClient
+          .from('turma')
+          .select('*', { count: 'exact', head: true })
+          .lte('created_at', fimMesAnterior.toISOString());
+
+        if (classesError) {
+          console.warn('Erro ao buscar turmas:', classesError);
+        }
+
+        // Contar encarregados
+        const { count: guardiansCount, error: guardiansError } = await window.supabaseClient
+          .from('encarregado')
+          .select('*', { count: 'exact', head: true });
+
+        const { count: guardiansLastMonth, error: guardiansLastMonthError } = await window.supabaseClient
+          .from('encarregado')
+          .select('*', { count: 'exact', head: true })
+          .lte('created_at', fimMesAnterior.toISOString());
+
+        if (guardiansError) {
+          console.warn('Erro ao buscar encarregados:', guardiansError);
+        }
+
+        // Contar disciplinas
+        const { count: subjectsCount, error: subjectsError } = await window.supabaseClient
+          .from('disciplinas')
+          .select('*', { count: 'exact', head: true });
+
+        const { count: subjectsLastMonth, error: subjectsLastMonthError } = await window.supabaseClient
+          .from('disciplinas')
+          .select('*', { count: 'exact', head: true })
+          .lte('created_at', fimMesAnterior.toISOString());
+
+        if (subjectsError) {
+          console.warn('Erro ao buscar disciplinas:', subjectsError);
+        }
+
+        // Função para calcular percentagem de crescimento
+        function calcularPercentagem(atual, anterior) {
+          if (anterior === 0 || anterior === null) {
+            return atual > 0 ? 100 : 0; // Se não havia dados anteriores e agora há, é 100% de crescimento
+          }
+          return Math.round(((atual - anterior) / anterior) * 100);
+        }
+
+        // Calcular percentagens
+        const studentsPercentage = calcularPercentagem(studentsCount || 0, studentsLastMonth || 0);
+        const teachersPercentage = calcularPercentagem(teachersCount || 0, teachersLastMonth || 0);
+        const classesPercentage = calcularPercentagem(classesCount || 0, classesLastMonth || 0);
+        const guardiansPercentage = calcularPercentagem(guardiansCount || 0, guardiansLastMonth || 0);
+        const subjectsPercentage = calcularPercentagem(subjectsCount || 0, subjectsLastMonth || 0);
+
+        // Atualizar contadores na interface
+        document.getElementById('studentsCount').textContent = studentsCount || 0;
+        document.getElementById('teachersCount').textContent = teachersCount || 0;
+        document.getElementById('classesCount').textContent = classesCount || 0;
+        document.getElementById('guardiansCount').textContent = guardiansCount || 0;
+        document.getElementById('subjectsCount').textContent = subjectsCount || 0;
+
+        // Atualizar percentagens
+        updateTrendDisplay('students', studentsPercentage);
+        updateTrendDisplay('teachers', teachersPercentage);
+        updateTrendDisplay('classes', classesPercentage);
+        updateTrendDisplay('guardians', guardiansPercentage);
+        updateTrendDisplay('subjects', subjectsPercentage);
+
+        console.log('Dados do dashboard carregados:', {
+          alunos: { atual: studentsCount, anterior: studentsLastMonth, percentagem: studentsPercentage },
+          professores: { atual: teachersCount, anterior: teachersLastMonth, percentagem: teachersPercentage },
+          turmas: { atual: classesCount, anterior: classesLastMonth, percentagem: classesPercentage },
+          encarregados: { atual: guardiansCount, anterior: guardiansLastMonth, percentagem: guardiansPercentage },
+          disciplinas: { atual: subjectsCount, anterior: subjectsLastMonth, percentagem: subjectsPercentage }
+        });
+        
+      } catch (error) {
+        console.error('Erro ao carregar dados do dashboard:', error);
+        
+        // Fallback em caso de erro
+        document.getElementById('studentsCount').textContent = '0';
+        document.getElementById('teachersCount').textContent = '0';
+        document.getElementById('classesCount').textContent = '0';
+        document.getElementById('guardiansCount').textContent = '0';
+        document.getElementById('subjectsCount').textContent = '0';
+      }
+    }
+
+    // Função para atualizar a exibição das tendências
+    function updateTrendDisplay(type, percentage) {
+      const cards = {
+        students: document.querySelector('.dashboard-card[onclick*="alunos.html"] .card-trend'),
+        teachers: document.querySelector('.dashboard-card[onclick*="professores.html"] .card-trend'),
+        classes: document.querySelector('.dashboard-card[onclick*="turmas.html"] .card-trend'),
+        guardians: document.querySelector('.dashboard-card[onclick*="encarregados.html"] .card-trend'),
+        subjects: document.querySelector('.dashboard-card[onclick*="disciplinas.html"] .card-trend')
+      };
+
+      const trendElement = cards[type];
+      if (!trendElement) return;
+
+      // Determinar se é positivo, negativo ou neutro
+      const isPositive = percentage > 0;
+      const isNegative = percentage < 0;
+      const isNeutral = percentage === 0;
+
+      // Remover classes existentes
+      trendElement.classList.remove('positive', 'negative');
+      
+      // Adicionar classe apropriada
+      if (isPositive) {
+        trendElement.classList.add('positive');
+      } else if (isNegative) {
+        trendElement.classList.add('negative');
+      }
+
+      // Atualizar ícone e texto
+      const icon = trendElement.querySelector('svg path');
+      const text = trendElement.childNodes[trendElement.childNodes.length - 1];
+
+      if (isPositive) {
+        icon.setAttribute('d', 'M7 14l5-5 5 5z'); // Seta para cima
+        text.textContent = ` +${percentage}% este mês`;
+      } else if (isNegative) {
+        icon.setAttribute('d', 'M7 10l5 5 5-5z'); // Seta para baixo
+        text.textContent = ` ${percentage}% este mês`;
+      } else {
+        icon.setAttribute('d', 'M7 12h10'); // Linha horizontal
+        text.textContent = ` ${percentage}% este mês`;
+      }
+    }
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      loadDashboardData();
+    });
+  </script>
+
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+  
+  <!-- Theme Manager -->
+  <script src="theme-manager.js"></script>
+  
+  <!-- Auth Manager -->
+  <script src="auth-manager.js"></script>
+  <script>
+    // Initialize auth manager and apply access control
+    document.addEventListener('DOMContentLoaded', function() {
+      // O auth manager já é inicializado globalmente no auth-manager.js
+      // Apenas aplicar controle de acesso
+      if (window.authManager) {
+        window.authManager.aplicarControleAcesso();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Escola One</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <link rel="stylesheet" href="design-system.css">
+  <style>
+    body {
+      background: hsl(var(--background));
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .login-card {
+      background: hsl(var(--card));
+      border-radius: calc(var(--radius) * 2);
+      padding: 2rem;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+      border: 1px solid hsl(var(--border));
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      margin-bottom: 1rem;
+    }
+
+    .logo-wrapper {
+      width: 120px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: calc(var(--radius) * 3);
+      background: hsl(var(--primary) / 0.1);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    .logo-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .app-title {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      color: hsl(var(--foreground));
+    }
+
+    .app-title .brand {
+      color: hsl(var(--primary));
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .forgot-link {
+      color: hsl(var(--primary));
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .forgot-link:hover {
+      text-decoration: underline;
+      opacity: 0.8;
+    }
+
+    .login-button {
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+
+    .signup-text {
+      text-align: center;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+    }
+
+    .signup-link {
+      color: hsl(var(--primary));
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 0.25rem;
+    }
+
+    .signup-link:hover {
+      text-decoration: underline;
+    }
+
+    .social-divider {
+      display: flex;
+      align-items: center;
+      margin: 1.5rem 0;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+    }
+
+    .social-divider::before,
+    .social-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: hsl(var(--border));
+    }
+
+    .social-divider span {
+      padding: 0 1rem;
+    }
+
+    .social-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .social-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      gap: 0.5rem;
+    }
+
+    .social-button.google {
+      background: white;
+      color: #374151;
+      border: 1px solid hsl(var(--border));
+    }
+
+    .social-button.google:hover {
+      background: #f9fafb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    .social-button.facebook {
+      background: #1877f2;
+      color: white;
+      border: 1px solid #1877f2;
+    }
+
+    .social-button.facebook:hover {
+      background: #166fe5;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    .message {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      text-align: center;
+      font-size: 0.875rem;
+    }
+
+    .message.success {
+      background: hsl(120 100% 97%);
+      color: hsl(120 100% 25%);
+      border: 1px solid hsl(120 100% 40%);
+    }
+
+    .message.error {
+      background: hsl(var(--destructive) / 0.1);
+      color: hsl(var(--destructive));
+      border: 1px solid hsl(var(--destructive));
+    }
+
+    [data-theme="dark"] .message.success {
+      background: hsl(120 100% 10%);
+      color: hsl(120 100% 80%);
+    }
+
+    .recovery-form {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .back-to-login {
+      display: block;
+      text-align: center;
+      margin-top: 1rem;
+      color: hsl(var(--primary));
+      text-decoration: none;
+      font-size: 0.875rem;
+    }
+
+    .back-to-login:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 1.5rem;
+      }
+      
+      .app-title {
+        font-size: 1.75rem;
+      }
+      
+      .logo-wrapper {
+        width: 100px;
+        height: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div id="app">
+        <!-- Logo -->
+        <div class="header-left">
+      <div class="logo">
+        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background Circle -->
+          <circle cx="25" cy="25" r="25" fill="url(#logoGradient)"/>
+          
+          <!-- Book Icon -->
+          <path d="M15 18C15 16.8954 15.8954 16 17 16H33C34.1046 16 35 16.8954 35 18V32C35 33.1046 34.1046 34 33 34H17C15.8954 34 15 33.1046 15 32V18Z" fill="white" fill-opacity="0.9"/>
+          <path d="M18 20H32V22H18V20Z" fill="hsl(220 14% 96%)"/>
+          <path d="M18 24H28V26H18V24Z" fill="hsl(220 14% 96%)"/>
+          <path d="M18 28H30V30H18V28Z" fill="hsl(220 14% 96%)"/>
+          
+          <!-- Graduation Cap -->
+          <path d="M25 12L35 16L25 20L15 16L25 12Z" fill="white"/>
+          <path d="M32 18V22C32 23.1046 28.4183 24 25 24C21.5817 24 18 23.1046 18 22V18" stroke="white" stroke-width="1.5" fill="none"/>
+          
+          <!-- Number "1" -->
+          <circle cx="39" cy="12" r="6" fill="white" fill-opacity="0.9"/>
+          <text x="39" y="16" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="hsl(220 14% 20%)" text-anchor="middle">1</text>
+          
+          <!-- Gradient Definition -->
+          <defs>
+            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <!-- <span class="brand">Escola</span> One-->
+      </div>
+    </div>
+
+        <!-- App Title -->
+        <div class="app-title">
+          <span class="brand">Escola</span> One
+        </div>
+
+        <!-- Login Form -->
+        <form v-if="!mostrarRecuperar" @submit.prevent="fazerLogin">
+          <div class="form-group">
+            <label class="label" for="telefone">Telefone</label>
+            <div class="phone-input-container" style="display: flex; gap: 0.5rem;">
+              <div class="country-code" style="display: flex; align-items: center; background: hsl(var(--muted)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 0 0.75rem; font-weight: 500; color: hsl(var(--foreground));">
+                +244
+              </div>
+              <input
+                type="tel"
+                id="telefone"
+                v-model="telefone"
+                class="input"
+                placeholder="943442334"
+                required
+                @input="formatarTelefone"
+                style="flex: 1;"
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-actions">
+              <label class="label" for="senha">Senha</label>
+              <a
+                class="forgot-link"
+                @click.prevent="mostrarRecuperar = true"
+                href="#"
+              >
+                Recuperar senha
+              </a>
+            </div>
+            <input
+              type="password"
+              id="senha"
+              v-model="senha"
+              class="input"
+              placeholder="Digite a sua senha"
+              required
+            >
+          </div>
+
+          <button type="submit" class="btn btn-primary login-button" :disabled="carregando">
+            <span v-if="carregando">Entrando...</span>
+            <span v-else>Entrar</span>
+          </button>
+
+          <div class="signup-text">
+            Não tem uma conta?
+            <a href="inscrever-se.html" class="signup-link">Criar Conta</a>
+          </div>
+        </form>
+
+        <!-- Password Recovery Form -->
+        <form v-if="mostrarRecuperar" class="recovery-form" @submit.prevent="recuperarSenha">
+          <div class="form-group">
+            <label class="label" for="recuperarTelefone">Informe seu Telefone</label>
+            <div class="phone-input-container" style="display: flex; gap: 0.5rem;">
+              <div class="country-code" style="display: flex; align-items: center; background: hsl(var(--muted)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 0 0.75rem; font-weight: 500; color: hsl(var(--foreground));">
+                +244
+              </div>
+              <input
+                type="tel"
+                id="recuperarTelefone"
+                v-model="recuperarTelefone"
+                class="input"
+                placeholder="943442334"
+                required
+                @input="formatarTelefoneRecuperacao"
+                style="flex: 1;"
+              >
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary login-button" :disabled="carregando">
+            <span v-if="carregando">Enviando...</span>
+            <span v-else>Recuperar Senha</span>
+          </button>
+
+          <a
+            class="back-to-login"
+            @click.prevent="mostrarRecuperar = false"
+            href="#"
+          >
+            Voltar ao login
+          </a>
+        </form>
+
+        <!-- Message Display -->
+        <div v-if="mensagem" class="message" :class="mensagemTipo">
+          {{ mensagem }}
+        </div>
+      </div>
+
+      <!-- Social Login -->
+      <div class="social-divider">
+        <span>Ou</span>
+      </div>
+
+      <div class="social-buttons">
+        <a href="#" class="social-button google">
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <g>
+              <path fill="#4285F4" d="M43.6 20.5h-1.9V20H24v8h11.3c-1.6 4.3-5.7 7-10.3 7-6.1 0-11-4.9-11-11s4.9-11 11-11c2.6 0 5 .9 6.9 2.4l6.6-6.6C34.1 6.5 29.3 4.5 24 4.5 12.7 4.5 3.5 13.7 3.5 25S12.7 45.5 24 45.5c10.5 0 19.5-8.5 19.5-19 0-1.3-.1-2.2-.3-3z"/>
+              <path fill="#34A853" d="M6.3 14.1l6.6 4.8C14.5 16.1 18.9 13 24 13c2.6 0 5 .9 6.9 2.4l6.6-6.6C34.1 6.5 29.3 4.5 24 4.5c-7.2 0-13.4 4.1-16.7 10.1z"/>
+              <path fill="#FBBC05" d="M24 45.5c5.3 0 10.1-1.8 13.9-4.8l-6.4-5.2c-2 1.4-4.5 2.2-7.5 2.2-4.6 0-8.7-2.7-10.3-7H6.3c3.3 6 9.5 10 17.7 10z"/>
+              <path fill="#EA4335" d="M43.6 20.5h-1.9V20H24v8h11.3c-.7 2-2.1 3.7-3.9 4.9l6.4 5.2c3.7-3.4 6.2-8.4 6.2-14.1 0-1.3-.1-2.2-.3-3z"/>
+            </g>
+          </svg>
+          Entrar com Google
+        </a>
+
+        <a href="#" class="social-button facebook">
+          <svg width="20" height="20" viewBox="0 0 32 32">
+            <path fill="currentColor" d="M29 0H3C1.3 0 0 1.3 0 3v26c0 1.7 1.3 3 3 3h13V20h-4v-5h4v-3.7C16 7.7 18.2 6 21.2 6c1.5 0 2.8.1 3.2.2v4h-2.2c-1.7 0-2 .8-2 2v2.6h4l-.5 5h-3.5v12h6c1.7 0 3-1.3 3-3V3c0-1.7-1.3-3-3-3z"/>
+          </svg>
+          Entrar com Facebook
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        telefone: '',
+        senha: '',
+        mensagem: '',
+        mensagemTipo: '',
+        mostrarRecuperar: false,
+        recuperarTelefone: '',
+        carregando: false
+      },
+      methods: {
+        // Formatar telefone em tempo real (Angola +244)
+        formatarTelefone() {
+          let value = this.telefone.replace(/\D/g, '');
+          // Limitar a 9 dígitos para Angola
+          if (value.length > 9) {
+            value = value.substring(0, 9);
+          }
+          // Formatação simples: 943 442 334
+          if (value.length >= 6) {
+            value = value.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1 $2 $3');
+          } else if (value.length >= 3) {
+            value = value.replace(/(\d{3})(\d{0,6})/, '$1 $2');
+          }
+          this.telefone = value.trim();
+        },
+
+        // Formatar telefone de recuperação (Angola +244)
+        formatarTelefoneRecuperacao() {
+          let value = this.recuperarTelefone.replace(/\D/g, '');
+          // Limitar a 9 dígitos para Angola
+          if (value.length > 9) {
+            value = value.substring(0, 9);
+          }
+          // Formatação simples: 943 442 334
+          if (value.length >= 6) {
+            value = value.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1 $2 $3');
+          } else if (value.length >= 3) {
+            value = value.replace(/(\d{3})(\d{0,6})/, '$1 $2');
+          }
+          this.recuperarTelefone = value.trim();
+        },
+
+        // Fazer login com Supabase
+        async fazerLogin() {
+          // Limpar mensagens anteriores
+          this.mensagem = '';
+          this.mensagemTipo = '';
+
+          // Validar campos
+          if (!this.telefone || !this.senha) {
+            this.mensagem = 'Por favor, preencha todos os campos.';
+            this.mensagemTipo = 'error';
+            return;
+          }
+
+          // Validar formato do telefone (Angola +244)
+          const telefoneRegex = /^\d{3}\s\d{3}\s\d{3}$/;
+          if (!telefoneRegex.test(this.telefone)) {
+            this.mensagem = 'Por favor, insira um telefone válido no formato 943 442 334.';
+            this.mensagemTipo = 'error';
+            return;
+          }
+
+          this.carregando = true;
+
+          try {
+            // Remover espaços do telefone para a consulta
+            const telefoneParaConsulta = this.telefone.replace(/\s/g, '');
+            
+            console.log('Tentando login com telefone:', telefoneParaConsulta);
+
+            // Buscar usuário na tabela 'usuario' do Supabase
+            const { data, error } = await window.supabaseClient
+              .from('usuario')
+              .select('*')
+              .eq('telefone', telefoneParaConsulta)
+              .eq('senha', this.senha)
+              .single();
+
+            if (error) {
+              console.log('Erro na consulta Supabase:', error);
+              
+              // Se for erro de "não encontrado", mostrar mensagem amigável
+              if (error.code === 'PGRST116') {
+                this.mensagem = 'Telefone ou senha incorretos.';
+              } else {
+                this.mensagem = 'Erro ao conectar com o servidor. Tente novamente.';
+              }
+              this.mensagemTipo = 'error';
+              return;
+            }
+
+            if (!data) {
+              this.mensagem = 'Telefone ou senha incorretos.';
+              this.mensagemTipo = 'error';
+              return;
+            }
+
+            // Verificar se o usuário tem perfil válido ('admin' ou 'professor')
+            if (data.perfil !== 'admin' && data.perfil !== 'professor') {
+              this.mensagem = 'Acesso negado. Perfil de usuário inválido.';
+              this.mensagemTipo = 'error';
+              return;
+            }
+
+            // Sucesso no login - usuário autenticado
+            console.log(`Usuário ${data.perfil} autenticado:`, data);
+            
+            // Atualizar último login
+            try {
+              await window.supabaseClient
+                .from('usuario')
+                .update({ ultimo_login: new Date().toISOString() })
+                .eq('id', data.id);
+            } catch (updateError) {
+              console.warn('Erro ao atualizar último login:', updateError);
+              // Não bloquear o login por causa disso
+            }
+
+            // Salvar dados do usuário no localStorage
+            localStorage.setItem('usuarioLogado', JSON.stringify({
+              id: data.id,
+              nome: data.nome,
+              telefone: data.telefone,
+              email: data.email,
+              perfil: data.perfil,
+              tipo_usuario: 'admin' // Para compatibilidade com o sistema existente
+            }));
+
+            this.mensagem = 'Login realizado com sucesso! Redirecionando para o painel...';
+            this.mensagemTipo = 'success';
+            
+            // Redirecionar para o painel
+            setTimeout(() => {
+              window.location.href = 'painel.html';
+            }, 1500);
+
+          } catch (error) {
+            console.error('Erro no login:', error);
+            this.mensagem = 'Erro interno do servidor. Tente novamente.';
+            this.mensagemTipo = 'error';
+          } finally {
+            this.carregando = false;
+          }
+        },
+
+        // Recuperar senha
+        async recuperarSenha() {
+          // Limpar mensagens anteriores
+          this.mensagem = '';
+          this.mensagemTipo = '';
+
+          if (!this.recuperarTelefone) {
+            this.mensagem = 'Por favor, informe seu telefone.';
+            this.mensagemTipo = 'error';
+            return;
+          }
+
+          // Validar formato do telefone (Angola +244)
+          const telefoneRegex = /^\d{3}\s\d{3}\s\d{3}$/;
+          if (!telefoneRegex.test(this.recuperarTelefone)) {
+            this.mensagem = 'Por favor, insira um telefone válido no formato 943 442 334.';
+            this.mensagemTipo = 'error';
+            return;
+          }
+
+          this.carregando = true;
+
+          try {
+            let resultado;
+            
+            if (window.supabaseClient && window.supabaseClient.from) {
+              try {
+                // Usar o nome da tabela detectado automaticamente
+                const tableName = window.supabaseTableName || 'usuario';
+                
+                // Verificar se o telefone existe na base de dados
+                const { data: usuario, error } = await window.supabaseClient
+                  .from(tableName)
+                  .select('telefone, nome')
+                  .eq('telefone', this.recuperarTelefone)
+                  .single();
+
+                if (error) {
+                  if (error.code === 'PGRST116') {
+                    this.mensagem = 'Telefone não encontrado no sistema.';
+                    this.mensagemTipo = 'error';
+                  } else {
+                    throw error;
+                  }
+                  return;
+                }
+
+                resultado = {
+                  success: true,
+                  message: `Instruções para recuperar a senha foram enviadas para o telefone ${this.recuperarTelefone}.`
+                };
+              } catch (supabaseError) {
+                console.warn('Supabase não disponível, usando sistema demo:', supabaseError);
+                // Usar sistema demo se Supabase falhar
+                resultado = await window.authDemo.recuperarSenha(this.recuperarTelefone);
+              }
+            } else {
+              // Usar sistema demo se Supabase não estiver configurado
+              resultado = await window.authDemo.recuperarSenha(this.recuperarTelefone);
+            }
+
+            if (resultado.success) {
+              this.mensagem = resultado.message;
+              this.mensagemTipo = 'success';
+              
+              // Voltar ao formulário de login após delay
+              setTimeout(() => {
+                this.mostrarRecuperar = false;
+                this.recuperarTelefone = '';
+                this.mensagem = '';
+                this.mensagemTipo = '';
+              }, 4000);
+            } else {
+              this.mensagem = resultado.error;
+              this.mensagemTipo = 'error';
+            }
+
+          } catch (error) {
+            console.error('Erro na recuperação:', error);
+            this.mensagem = 'Erro interno do servidor. Tente novamente.';
+            this.mensagemTipo = 'error';
+          } finally {
+            this.carregando = false;
+          }
+        }
+      },
+      mounted() {
+        // Verificar se já está logado
+        const usuarioLogado = localStorage.getItem('usuarioLogado');
+        if (usuarioLogado) {
+          // Já está logado, redirecionar para o painel
+          window.location.href = 'painel.html';
+          return;
+        }
+
+        // Focar no campo de telefone quando a página carregar
+        this.$nextTick(() => {
+          const telefoneInput = document.getElementById('telefone');
+          if (telefoneInput) {
+            telefoneInput.focus();
+          }
+        });
+      }
+    });
+  </script>
+
+  <!-- Theme Manager -->
+  <script src="theme-manager.js"></script>
+
+  <!-- Authentication Demo -->
+  <script src="auth-demo.js"></script>
+
+  <!-- Authentication Manager -->
+  <script src="auth-manager.js"></script>
+
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+</body>
+</html>
+
+
+
+
+
+

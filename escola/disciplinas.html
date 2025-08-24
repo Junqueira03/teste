@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Disciplinas - Escola One</title>
+  <link rel="stylesheet" href="design-system.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      background: hsl(var(--background));
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .header {
+      background: hsl(var(--card));
+      border-bottom: 1px solid hsl(var(--border));
+      padding: 1rem 2rem;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+      box-sizing: border-box;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo {
+      width: 50px;
+      height: 50px;
+      border-radius: calc(var(--radius) * 2);
+      overflow: hidden;
+      background: hsl(var(--primary) / 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+    }
+
+    .brand-text .brand {
+      color: hsl(var(--primary));
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .header-nav .nav-link {
+      color: hsl(var(--muted-foreground));
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+
+    .header-nav .nav-link:hover {
+      color: hsl(var(--primary));
+      background: hsl(var(--primary) / 0.1);
+    }
+
+    .header-nav .nav-link.active {
+      color: hsl(var(--primary));
+      background: hsl(var(--primary) / 0.1);
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-top: 70px;
+      padding: 2rem;
+      min-height: calc(100vh - 70px);
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .page-title-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .page-icon {
+      width: 48px;
+      height: 48px;
+      background: hsl(var(--primary) / 0.1);
+      color: hsl(var(--primary));
+      border-radius: calc(var(--radius) * 1.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .page-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+      margin: 0;
+    }
+
+    .page-subtitle {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+      margin: 0.25rem 0 0 0;
+    }
+
+    /* Search and Filter Bar */
+    .search-bar {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) * 2);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .filter-select {
+      min-width: 150px;
+    }
+
+    /* Subjects Table */
+    .subjects-section {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) * 2);
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid hsl(var(--border));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .table-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: hsl(var(--foreground));
+      margin: 0;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .subjects-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .subjects-table th {
+      background: hsl(var(--muted) / 0.5);
+      color: hsl(var(--muted-foreground));
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .subjects-table td {
+      padding: 1rem;
+      border-bottom: 1px solid hsl(var(--border));
+      vertical-align: middle;
+    }
+
+    .subjects-table tr:hover {
+      background: hsl(var(--muted) / 0.3);
+    }
+
+    .subjects-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .subject-name {
+      font-weight: 600;
+      color: hsl(var(--foreground));
+    }
+
+    .subject-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .professor-name {
+      font-weight: 500;
+      color: hsl(var(--foreground));
+    }
+
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .type-badge.obrigatoria {
+      background: hsl(0 100% 95%);
+      color: hsl(0 100% 50%);
+    }
+
+    .type-badge.optativa {
+      background: hsl(45 100% 95%);
+      color: hsl(45 100% 50%);
+    }
+
+    .type-badge.extracurricular {
+      background: hsl(120 100% 95%);
+      color: hsl(120 100% 40%);
+    }
+
+    [data-theme="dark"] .type-badge.obrigatoria {
+      background: hsl(0 100% 10%);
+      color: hsl(0 100% 60%);
+    }
+
+    [data-theme="dark"] .type-badge.optativa {
+      background: hsl(45 100% 10%);
+      color: hsl(45 100% 60%);
+    }
+
+    [data-theme="dark"] .type-badge.extracurricular {
+      background: hsl(120 100% 10%);
+      color: hsl(120 100% 60%);
+    }
+
+    .workload-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .workload-text {
+      font-size: 0.875rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .workload-hours {
+      font-weight: 600;
+      color: hsl(var(--foreground));
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 1rem;
+      color: hsl(var(--muted-foreground) / 0.5);
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .empty-state p {
+      margin-bottom: 1.5rem;
+    }
+
+    /* Loading State */
+    .loading-state {
+      text-align: center;
+      padding: 2rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid hsl(var(--muted));
+      border-top: 3px solid hsl(var(--primary));
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .header-nav {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 1rem;
+      }
+
+      .main-content {
+        padding: 1rem;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .search-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-input,
+      .filter-select {
+        min-width: auto;
+      }
+
+      .subjects-table {
+        font-size: 0.875rem;
+      }
+
+      .subjects-table th,
+      .subjects-table td {
+        padding: 0.75rem 0.5rem;
+      }
+    }
+
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .modal-content {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) * 2);
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: hsl(var(--foreground));
+      margin: 0;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      color: hsl(var(--muted-foreground));
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+
+    .btn-close:hover {
+      background: hsl(var(--muted));
+      color: hsl(var(--foreground));
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      padding: 1.5rem;
+      border-top: 1px solid hsl(var(--border));
+    }
+
+    @media (max-width: 768px) {
+      .modal-footer {
+        flex-direction: column-reverse;
+      }
+
+      .modal-footer .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+  <div class="header-left">
+      <div class="logo">
+        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background Circle -->
+          <circle cx="25" cy="25" r="25" fill="url(#logoGradient)"/>
+          
+          <!-- Book Icon -->
+          <path d="M15 18C15 16.8954 15.8954 16 17 16H33C34.1046 16 35 16.8954 35 18V32C35 33.1046 34.1046 34 33 34H17C15.8954 34 15 33.1046 15 32V18Z" fill="white" fill-opacity="0.9"/>
+          <path d="M18 20H32V22H18V20Z" fill="hsl(220 14% 96%)"/>
+          <path d="M18 24H28V26H18V24Z" fill="hsl(220 14% 96%)"/>
+          <path d="M18 28H30V30H18V28Z" fill="hsl(220 14% 96%)"/>
+          
+          <!-- Graduation Cap -->
+          <path d="M25 12L35 16L25 20L15 16L25 12Z" fill="white"/>
+          <path d="M32 18V22C32 23.1046 28.4183 24 25 24C21.5817 24 18 23.1046 18 22V18" stroke="white" stroke-width="1.5" fill="none"/>
+          
+          <!-- Number "1" -->
+          <circle cx="39" cy="12" r="6" fill="white" fill-opacity="0.9"/>
+          <text x="39" y="16" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="hsl(220 14% 20%)" text-anchor="middle">1</text>
+          
+          <!-- Gradient Definition -->
+          <defs>
+            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand">Escola</span> One
+      </div>
+    </div>
+
+    <nav class="header-nav">
+      <a href="painel.html" class="nav-link">Home</a>
+      <a href="alunos.html" class="nav-link">Alunos</a>
+      <a href="encarregados.html" class="nav-link">Encarregados</a>
+      <a href="professores.html" class="nav-link">Professores</a>
+      <a href="disciplinas.html" class="nav-link active">Disciplinas</a>
+      <a href="turmas.html" class="nav-link">Turmas</a>
+      <a href="horarios.html" class="nav-link">Horários</a>
+      <a href="#" class="nav-link" onclick="if(confirm('Tem certeza que deseja sair do sistema?')) { authManager.logout(); } return false;">Logout</a>
+    </nav>
+  </header>
+
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="page-header">
+      <div class="page-title-section">
+        <div class="page-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+            <path d="M8 8h8v2H8V8Zm0 4h8v2H8v-2Z" fill="white"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="page-title">Gestão de Disciplinas</h1>
+          <p class="page-subtitle">Gerencie todas as disciplinas da escola</p>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="adicionarDisciplina()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+        </svg>
+        Adicionar Disciplina
+      </button>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="search-bar">
+      <input 
+        type="text" 
+        class="input search-input" 
+        placeholder="Pesquisar disciplinas por nome ou professor..."
+        id="searchInput"
+        oninput="filtrarDisciplinas()"
+      >
+      <select class="select filter-select" id="tipoFilter" onchange="filtrarDisciplinas()">
+        <option value="">Todos os tipos</option>
+        <option value="Obrigatória">Teórica</option>
+        <option value="Optativa">Prática</option>
+        <option value="Extracurricular">Teórico-Prática</option>
+      </select>
+    </div>
+
+    <!-- Subjects Table -->
+    <div class="subjects-section">
+      <div class="table-header">
+        <h2 class="table-title">Lista de Disciplinas</h2>
+        <span id="subjectsCount" class="badge badge-secondary">0 disciplinas</span>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <p>Carregando disciplinas...</p>
+      </div>
+
+      <!-- Table Container -->
+      <div class="table-container" id="tableContainer" style="display: none;">
+        <table class="subjects-table">
+          <thead>
+            <tr>
+              <th>Nome da Disciplina</th>
+              <th>Professor</th>
+              <th>Tipo de Disciplina</th>
+              <th>Carga Horária</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="subjectsTableBody">
+            <!-- Subjects will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <rect x="4" y="4" width="16" height="16" rx="2"/>
+          <path d="M8 8h8v2H8V8Zm0 4h8v2H8v-2Z" fill="white"/>
+        </svg>
+        <h3>Nenhuma disciplina encontrada</h3>
+        <p>Não há disciplinas cadastradas ou que correspondam aos filtros aplicados.</p>
+        <button class="btn btn-primary" onclick="adicionarDisciplina()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+          </svg>
+          Adicionar Primeira Disciplina
+        </button>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Editar Disciplina</h3>
+          <button class="btn-close" onclick="fecharModalEdicao()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        <form id="editForm" onsubmit="return salvarEdicaoDisciplina(event)">
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="label required" for="editNome">Nome da Disciplina</label>
+              <input
+                type="text"
+                id="editNome"
+                name="nome"
+                class="input"
+                placeholder="Ex: Matemática, Português"
+                required
+              >
+              <div class="error-message" id="editNome-error">Por favor, insira o nome da disciplina.</div>
+            </div>
+
+            <div class="form-group">
+              <label class="label required" for="editProfessor">Professor</label>
+              <input
+                type="text"
+                id="editProfessor"
+                name="professor"
+                class="input"
+                placeholder="Nome do professor"
+                required
+              >
+              <div class="error-message" id="editProfessor-error">Por favor, insira o nome do professor.</div>
+            </div>
+
+            <div class="form-group">
+              <label class="label required" for="editTipo">Tipo de Disciplina</label>
+              <select id="editTipo" name="tipo" class="select" required>
+                <option value="">Selecione o tipo</option>
+                <option value="Obrigatória">Obrigatória</option>
+                <option value="Optativa">Optativa</option>
+                <option value="Extracurricular">Extracurricular</option>
+              </select>
+              <div class="error-message" id="editTipo-error">Por favor, selecione o tipo da disciplina.</div>
+            </div>
+
+            <div class="form-group">
+              <label class="label required" for="editCargaHoraria">Carga Horária (horas/ano)</label>
+              <input
+                type="number"
+                id="editCargaHoraria"
+                name="cargaHoraria"
+                class="input"
+                placeholder="Ex: 80"
+                min="1"
+                max="200"
+                required
+              >
+              <div class="error-message" id="editCargaHoraria-error">Por favor, insira a carga horária.</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="fecharModalEdicao()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" id="editSubmitButton">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+              </svg>
+              Salvar Alterações
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Supabase Configuration
+    const SUPABASE_URL = 'https://fsmnmggjklhxfkfnjxgc.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzbW5tZ2dqa2xoeGZrZm5qeGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2MDE0NTAsImV4cCI6MjA3MTE3NzQ1MH0.dMRH2DTAE8a1Vnyw9a8OiP5nTZetQy70hQgMV_a7jwo';
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let disciplinas = [];
+    let disciplinasFiltradas = [];
+
+    // Sample data for demonstration
+    const sampleDisciplinas = [
+  
+      {
+        id: 2,
+        nome: "Português",
+        professor: "Prof.ª Maria Santos",
+        tipo: "Obrigatória",
+        carga_horaria: 80
+      },
+      
+      {
+        id: 4,
+        nome: "Geografia",
+        professor: "Prof.ª Ana Costa",
+        tipo: "Obrigatória",
+        carga_horaria: 60
+      },
+      {
+        id: 5,
+        nome: "Inglês",
+        professor: "Prof. Pedro Rodrigues",
+        tipo: "Optativa",
+        carga_horaria: 40
+      },
+      {
+        id: 6,
+        nome: "Educação Física",
+        professor: "Prof. Isabel Pereira",
+        tipo: "Extracurricular",
+        carga_horaria: 40
+      },
+      {
+        id: 7,
+        nome: "Informática",
+        professor: "Prof. António Fernandes",
+        tipo: "Optativa",
+        carga_horaria: 60
+      },
+      {
+        id: 8,
+        nome: "Artes",
+        professor: "Prof.ª Luísa Oliveira",
+        tipo: "Extracurricular",
+        carga_horaria: 30
+      }
+    ];
+
+
+    // Load subjects
+    async function carregarDisciplinas() {
+      try {
+        showLoading();
+        
+        // Try to load from Supabase first
+        try {
+          const { data, error } = await supabaseClient
+            .from('disciplinas')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            throw error;
+          }
+
+          disciplinas = data || [];
+        } catch (supabaseError) {
+          console.warn('Supabase não disponível, usando dados de exemplo:', supabaseError);
+          // Use sample data if Supabase is not available
+          disciplinas = sampleDisciplinas;
+        }
+
+        disciplinasFiltradas = [...disciplinas];
+        renderizarTabela();
+        updateSubjectsCount();
+        
+      } catch (error) {
+        console.error('Erro ao carregar disciplinas:', error);
+        // Fallback to sample data
+        disciplinas = sampleDisciplinas;
+        disciplinasFiltradas = [...disciplinas];
+        renderizarTabela();
+        updateSubjectsCount();
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // Get type badge class
+    function getTypeBadgeClass(tipo) {
+      switch(tipo.toLowerCase()) {
+        case 'obrigatória': return 'obrigatoria';
+        case 'optativa': return 'optativa';
+        case 'extracurricular': return 'extracurricular';
+        default: return 'obrigatoria';
+      }
+    }
+
+    // Render subjects table
+    function renderizarTabela() {
+      const tbody = document.getElementById('subjectsTableBody');
+      const tableContainer = document.getElementById('tableContainer');
+      const emptyState = document.getElementById('emptyState');
+      
+      if (disciplinasFiltradas.length === 0) {
+        tableContainer.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+      
+      emptyState.style.display = 'none';
+      tableContainer.style.display = 'block';
+      
+      tbody.innerHTML = disciplinasFiltradas.map(disciplina => {
+        const typeClass = getTypeBadgeClass(disciplina.tipodisciplina);
+        
+        return `
+          <tr>
+            <td>
+              <div class="subject-info">
+                <div class="subject-name">${disciplina.nome}</div>
+              </div>
+            </td>
+            <td>
+              <div class="professor-name">${disciplina.professor}</div>
+            </td>
+            <td>
+              <span class="type-badge ${typeClass}">${disciplina.tipodisciplina}</span>
+            </td>
+            <td>
+              <div class="workload-info">
+                <span class="workload-hours">${disciplina.cargahorario}h</span>
+                <span class="workload-text">por ano</span>
+              </div>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-outline btn-icon" onclick="editarDisciplina(${disciplina.id})" title="Editar">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                  </svg>
+                </button>
+                <button class="btn btn-destructive btn-icon" onclick="excluirDisciplina(${disciplina.id})" title="Excluir">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Filter subjects
+    function filtrarDisciplinas() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const tipoFilter = document.getElementById('tipoFilter').value;
+
+      disciplinasFiltradas = disciplinas.filter(disciplina => {
+        const matchesSearch = !searchTerm || 
+          disciplina.nome.toLowerCase().includes(searchTerm) ||
+          disciplina.professor.toLowerCase().includes(searchTerm);
+
+        const matchesTipo = !tipoFilter || disciplina.tipodisciplina === tipoFilter || disciplina.tipo === tipoFilter;
+
+        return matchesSearch && matchesTipo;
+      });
+
+      renderizarTabela();
+      updateSubjectsCount();
+    }
+
+    // Update subjects count
+    function updateSubjectsCount() {
+      const count = disciplinasFiltradas.length;
+      const countElement = document.getElementById('subjectsCount');
+      countElement.textContent = `${count} disciplina${count !== 1 ? 's' : ''}`;
+    }
+
+    // Show loading state
+    function showLoading() {
+      document.getElementById('loadingState').style.display = 'block';
+      document.getElementById('tableContainer').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'none';
+    }
+
+    // Hide loading state
+    function hideLoading() {
+      document.getElementById('loadingState').style.display = 'none';
+    }
+
+    // Add subject
+    function adicionarDisciplina() {
+      window.location.href = 'cadastrar-disciplina.html';
+    }
+
+    // Edit subject
+    function editarDisciplina(id) {
+      const disciplina = disciplinas.find(d => d.id === id);
+      if (!disciplina) return;
+
+      // Populate form with current data
+      document.getElementById('editNome').value = disciplina.nome;
+      document.getElementById('editProfessor').value = disciplina.professor;
+      document.getElementById('editTipo').value = disciplina.tipodisciplina || disciplina.tipo;
+      document.getElementById('editCargaHoraria').value = disciplina.cargahorario || disciplina.carga_horaria;
+
+      // Store the ID for later use
+      document.getElementById('editForm').dataset.disciplinaId = id;
+
+      // Show modal
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    // Close edit modal
+    function fecharModalEdicao() {
+      document.getElementById('editModal').style.display = 'none';
+      document.getElementById('editForm').reset();
+      
+      // Clear any error states
+      document.querySelectorAll('#editModal .form-group').forEach(group => {
+        group.classList.remove('error');
+      });
+    }
+
+    // Validate edit field
+    function validarCampoEdicao(campo, mensagem) {
+      const input = document.getElementById('edit' + campo.charAt(0).toUpperCase() + campo.slice(1));
+      const formGroup = input.closest('.form-group');
+      const errorDiv = document.getElementById('edit' + campo.charAt(0).toUpperCase() + campo.slice(1) + '-error');
+      
+      if (!input.value.trim()) {
+        formGroup.classList.add('error');
+        errorDiv.textContent = mensagem;
+        return false;
+      } else {
+        formGroup.classList.remove('error');
+        return true;
+      }
+    }
+
+    // Validate edit carga horaria
+    function validarCargaHorariaEdicao() {
+      const cargaHoraria = document.getElementById('editCargaHoraria');
+      const formGroup = cargaHoraria.closest('.form-group');
+      const errorDiv = document.getElementById('editCargaHoraria-error');
+      const valor = parseInt(cargaHoraria.value);
+      
+      if (!valor || valor < 1 || valor > 200) {
+        formGroup.classList.add('error');
+        errorDiv.textContent = 'A carga horária deve ser entre 1 e 200 horas.';
+        return false;
+      } else {
+        formGroup.classList.remove('error');
+        return true;
+      }
+    }
+
+    // Save edited subject
+    async function salvarEdicaoDisciplina(event) {
+      event.preventDefault();
+      
+      const disciplinaId = document.getElementById('editForm').dataset.disciplinaId;
+      if (!disciplinaId) return false;
+
+      // Validate all fields
+      let isValid = true;
+      
+      isValid &= validarCampoEdicao('nome', 'Por favor, insira o nome da disciplina.');
+      isValid &= validarCampoEdicao('professor', 'Por favor, insira o nome do professor.');
+      isValid &= validarCampoEdicao('tipo', 'Por favor, selecione o tipo da disciplina.');
+      isValid &= validarCargaHorariaEdicao();
+      
+      if (!isValid) {
+        return false;
+      }
+
+      // Collect form data
+      const dadosAtualizados = {
+        nome: document.getElementById('editNome').value.trim(),
+        professor: document.getElementById('editProfessor').value.trim(),
+        tipodisciplina: document.getElementById('editTipo').value.trim(),
+        cargahorario: parseInt(document.getElementById('editCargaHoraria').value.trim())
+      };
+
+      try {
+        // Show loading state
+        const submitButton = document.getElementById('editSubmitButton');
+        const originalText = submitButton.innerHTML;
+        submitButton.classList.add('loading');
+        submitButton.disabled = true;
+        submitButton.innerHTML = 'Salvando...';
+
+        // Update in Supabase
+        const { error } = await supabaseClient
+          .from('disciplinas')
+          .update(dadosAtualizados)
+          .eq('id', disciplinaId);
+
+        if (error) {
+          throw error;
+        }
+
+        // Close modal and reload data
+        fecharModalEdicao();
+        alert('Disciplina atualizada com sucesso!');
+        await carregarDisciplinas();
+
+      } catch (error) {
+        console.error('Erro ao atualizar disciplina:', error);
+        alert('Erro ao atualizar disciplina: ' + error.message);
+        
+        // Reset button state
+        const submitButton = document.getElementById('editSubmitButton');
+        submitButton.classList.remove('loading');
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
+      }
+      
+      return false;
+    }
+
+    // Delete subject
+    async function excluirDisciplina(id) {
+      const disciplina = disciplinas.find(d => d.id === id);
+      if (!disciplina) return;
+
+      if (!confirm(`Tem certeza que deseja excluir a disciplina "${disciplina.nome}"?\n\nEsta ação não pode ser desfeita.`)) {
+        return;
+      }
+
+      try {
+        // Delete from Supabase
+        const { error } = await supabaseClient
+          .from('disciplinas')
+          .delete()
+          .eq('id', id);
+
+        if (error) {
+          throw error;
+        }
+
+        alert('Disciplina excluída com sucesso!');
+        await carregarDisciplinas(); // Reload the list
+        
+      } catch (error) {
+        console.error('Erro ao excluir disciplina:', error);
+        alert('Erro ao excluir disciplina: ' + error.message);
+      }
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+      const modal = document.getElementById('editModal');
+      if (event.target === modal) {
+        fecharModalEdicao();
+      }
+    });
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      carregarDisciplinas();
+      
+      // Add event listeners for edit form validation
+      document.querySelectorAll('#editModal .input, #editModal .select').forEach(input => {
+        input.addEventListener('input', function() {
+          const formGroup = this.closest('.form-group');
+          if (formGroup.classList.contains('error')) {
+            formGroup.classList.remove('error');
+          }
+        });
+      });
+    });
+  </script>
+
+  <!-- Theme Manager -->
+  <script src="theme-manager.js"></script>
+  
+  <!-- Auth Manager -->
+  <script src="auth-manager.js"></script>
+  <script>
+    // Initialize auth manager and apply access control
+    document.addEventListener('DOMContentLoaded', function() {
+      const authManager = new AuthManager();
+      authManager.verificarAutenticacao();
+      authManager.aplicarControleAcesso();
+    });
+  </script>
+</body>
+</html>
+            <td>

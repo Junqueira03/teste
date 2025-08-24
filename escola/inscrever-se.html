@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar Conta - Escola One</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <link rel="stylesheet" href="design-system.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      background: hsl(var(--background));
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+
+.logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      margin-bottom: 1rem;
+    }
+
+    .logo-wrapper {
+      width: 120px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: calc(var(--radius) * 3);
+      background: hsl(var(--primary) / 0.1);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    .logo-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+
+
+
+    .signup-container {
+      width: 100%;
+      max-width: 450px;
+      margin: 0 auto;
+    }
+
+    .signup-card {
+      background: hsl(var(--card));
+      border-radius: calc(var(--radius) * 2);
+      padding: 2rem;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+      border: 1px solid hsl(var(--border));
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo-wrapper {
+      width: 120px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: calc(var(--radius) * 3);
+      background: hsl(var(--primary) / 0.1);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    .logo-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .app-title {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: hsl(var(--foreground));
+    }
+
+    .app-title .brand {
+      color: hsl(var(--primary));
+    }
+
+    .app-subtitle {
+      text-align: center;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 2rem;
+      font-size: 0.875rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .phone-input-container {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .country-code {
+      display: flex;
+      align-items: center;
+      background: hsl(var(--muted));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 0 0.75rem;
+      font-weight: 500;
+      color: hsl(var(--foreground));
+      min-width: 60px;
+      justify-content: center;
+    }
+
+    .signup-button {
+      width: 100%;
+      margin-top: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .login-text {
+      text-align: center;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+    }
+
+    .login-link {
+      color: hsl(var(--primary));
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 0.25rem;
+    }
+
+    .login-link:hover {
+      text-decoration: underline;
+    }
+
+    .message {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      text-align: center;
+      font-size: 0.875rem;
+    }
+
+    .message.success {
+      background: hsl(120 100% 97%);
+      color: hsl(120 100% 25%);
+      border: 1px solid hsl(120 100% 40%);
+    }
+
+    .message.error {
+      background: hsl(var(--destructive) / 0.1);
+      color: hsl(var(--destructive));
+      border: 1px solid hsl(var(--destructive));
+    }
+
+    [data-theme="dark"] .message.success {
+      background: hsl(120 100% 10%);
+      color: hsl(120 100% 80%);
+    }
+
+    .error-message {
+      color: hsl(var(--destructive));
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .input.error {
+      border-color: hsl(var(--destructive));
+      box-shadow: 0 0 0 2px hsl(var(--destructive) / 0.2);
+    }
+
+    @media (max-width: 480px) {
+      .signup-card {
+        padding: 1.5rem;
+      }
+      
+      .app-title {
+        font-size: 1.75rem;
+      }
+      
+      .logo-wrapper {
+        width: 100px;
+        height: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-container">
+    <div class="signup-card">
+      <div id="app">
+        <!-- Logo -->
+
+        <div class="header-left">
+      <div class="logo">
+        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background Circle -->
+          <circle cx="25" cy="25" r="25" fill="url(#logoGradient)"/>
+          
+          <!-- Book Icon -->
+          <path d="M15 18C15 16.8954 15.8954 16 17 16H33C34.1046 16 35 16.8954 35 18V32C35 33.1046 34.1046 34 33 34H17C15.8954 34 15 33.1046 15 32V18Z" fill="white" fill-opacity="0.9"/>
+          <path d="M18 20H32V22H18V20Z" fill="hsl(220 14% 96%)"/>
+          <path d="M18 24H28V26H18V24Z" fill="hsl(220 14% 96%)"/>
+          <path d="M18 28H30V30H18V28Z" fill="hsl(220 14% 96%)"/>
+          
+          <!-- Graduation Cap -->
+          <path d="M25 12L35 16L25 20L15 16L25 12Z" fill="white"/>
+          <path d="M32 18V22C32 23.1046 28.4183 24 25 24C21.5817 24 18 23.1046 18 22V18" stroke="white" stroke-width="1.5" fill="none"/>
+          
+          <!-- Number "1" -->
+          <circle cx="39" cy="12" r="6" fill="white" fill-opacity="0.9"/>
+          <text x="39" y="16" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="hsl(220 14% 20%)" text-anchor="middle">1</text>
+          
+          <!-- Gradient Definition -->
+          <defs>
+            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="brand-text">
+       <!-- <span class="brand">Escola</span> One-->
+      </div>
+    </div>
+
+        <!-- App Title -->
+        <div class="app-title">
+          <span class="brand">Escola</span> One
+        </div>
+        <p class="app-subtitle">Comece sua jornada acadêmica conosco</p>
+
+        <!-- Signup Form -->
+        <form @submit.prevent="criarConta">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="label" for="nome">Nome Completo *</label>
+              <input
+                type="text"
+                id="nome"
+                v-model="nome"
+                class="input"
+                :class="{ error: erros.nome }"
+                placeholder="Digite seu nome completo"
+                required
+                @input="limparErro('nome')"
+              >
+              <span v-if="erros.nome" class="error-message">{{ erros.nome }}</span>
+            </div>
+
+            <div class="form-group">
+              <label class="label" for="telefone">Telefone *</label>
+              <div class="phone-input-container">
+                <div class="country-code">+244</div>
+                <input
+                  type="tel"
+                  id="telefone"
+                  v-model="telefone"
+                  class="input"
+                  :class="{ error: erros.telefone }"
+                  placeholder="943442334"
+                  required
+                  @input="formatarTelefone"
+                  style="flex: 1;"
+                >
+              </div>
+              <span v-if="erros.telefone" class="error-message">{{ erros.telefone }}</span>
+            </div>
+
+            <div class="form-group">
+              <label class="label" for="email">Email *</label>
+              <input
+                type="email"
+                id="email"
+                v-model="email"
+                class="input"
+                :class="{ error: erros.email }"
+                placeholder="seu.email@exemplo.com"
+                required
+                @input="limparErro('email')"
+              >
+              <span v-if="erros.email" class="error-message">{{ erros.email }}</span>
+            </div>
+
+            <div class="form-group">
+              <label class="label" for="senha">Senha *</label>
+              <input
+                type="password"
+                id="senha"
+                v-model="senha"
+                class="input"
+                :class="{ error: erros.senha }"
+                placeholder="Digite uma senha segura"
+                required
+                @input="limparErro('senha')"
+              >
+              <span v-if="erros.senha" class="error-message">{{ erros.senha }}</span>
+            </div>
+
+            <div class="form-group">
+              <label class="label" for="confirmarSenha">Confirmar Senha *</label>
+              <input
+                type="password"
+                id="confirmarSenha"
+                v-model="confirmarSenha"
+                class="input"
+                :class="{ error: erros.confirmarSenha }"
+                placeholder="Confirme sua senha"
+                required
+                @input="limparErro('confirmarSenha')"
+              >
+              <span v-if="erros.confirmarSenha" class="error-message">{{ erros.confirmarSenha }}</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary signup-button" :disabled="carregando">
+            <span v-if="carregando">Criando conta...</span>
+            <span v-else>Criar Conta</span>
+          </button>
+
+          <div class="login-text">
+            Já tem uma conta?
+            <a href="index.html" class="login-link">Fazer Login</a>
+          </div>
+        </form>
+
+        <!-- Message Display -->
+        <div v-if="mensagem" class="message" :class="mensagemTipo">
+          {{ mensagem }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        nome: '',
+        telefone: '',
+        email: '',
+        senha: '',
+        confirmarSenha: '',
+        mensagem: '',
+        mensagemTipo: '',
+        carregando: false,
+        erros: {}
+      },
+      methods: {
+        // Formatar telefone em tempo real (Angola +244)
+        formatarTelefone() {
+          let value = this.telefone.replace(/\D/g, '');
+          // Limitar a 9 dígitos para Angola
+          if (value.length > 9) {
+            value = value.substring(0, 9);
+          }
+          // Formatação simples: 943 442 334
+          if (value.length >= 6) {
+            value = value.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1 $2 $3');
+          } else if (value.length >= 3) {
+            value = value.replace(/(\d{3})(\d{0,6})/, '$1 $2');
+          }
+          this.telefone = value.trim();
+          this.limparErro('telefone');
+        },
+
+        // Limpar erro específico
+        limparErro(campo) {
+          if (this.erros[campo]) {
+            this.$delete(this.erros, campo);
+          }
+        },
+
+        // Validar formulário
+        validarFormulario() {
+          this.erros = {};
+          let isValid = true;
+
+          // Validar nome
+          if (!this.nome || this.nome.trim().length < 2) {
+            this.erros.nome = 'Nome deve ter pelo menos 2 caracteres';
+            isValid = false;
+          }
+
+          // Validar telefone
+          const telefoneRegex = /^\d{3}\s\d{3}\s\d{3}$/;
+          if (!this.telefone || !telefoneRegex.test(this.telefone)) {
+            this.erros.telefone = 'Telefone deve estar no formato 943 442 334';
+            isValid = false;
+          }
+
+          // Validar email
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!this.email || !emailRegex.test(this.email)) {
+            this.erros.email = 'Email deve ter um formato válido';
+            isValid = false;
+          }
+
+          // Validar senha
+          if (!this.senha || this.senha.length < 6) {
+            this.erros.senha = 'Senha deve ter pelo menos 6 caracteres';
+            isValid = false;
+          }
+
+          // Validar confirmação de senha
+          if (!this.confirmarSenha || this.confirmarSenha !== this.senha) {
+            this.erros.confirmarSenha = 'Senhas não coincidem';
+            isValid = false;
+          }
+
+          return isValid;
+        },
+
+        // Criar conta
+        async criarConta() {
+          // Limpar mensagens anteriores
+          this.mensagem = '';
+          this.mensagemTipo = '';
+
+          // Validar formulário
+          if (!this.validarFormulario()) {
+            this.mensagem = 'Por favor, corrija os erros no formulário.';
+            this.mensagemTipo = 'error';
+            return;
+          }
+
+          this.carregando = true;
+
+          try {
+            // Verificar se o Supabase está disponível
+            if (!window.supabaseClient) {
+              throw new Error('Conexão com o servidor não disponível');
+            }
+
+            // Remover espaços do telefone para armazenar
+            const telefoneParaArmazenar = this.telefone.replace(/\s/g, '');
+
+            // Verificar se telefone já existe
+            const { data: telefoneExistente } = await window.supabaseClient
+              .from('usuario')
+              .select('telefone')
+              .eq('telefone', telefoneParaArmazenar)
+              .single();
+
+            if (telefoneExistente) {
+              this.erros.telefone = 'Este telefone já está cadastrado';
+              this.mensagem = 'Telefone já está em uso. Tente fazer login.';
+              this.mensagemTipo = 'error';
+              return;
+            }
+
+            // Verificar se email já existe
+            const { data: emailExistente } = await window.supabaseClient
+              .from('usuario')
+              .select('email')
+              .eq('email', this.email.toLowerCase())
+              .single();
+
+            if (emailExistente) {
+              this.erros.email = 'Este email já está cadastrado';
+              this.mensagem = 'Email já está em uso. Tente fazer login.';
+              this.mensagemTipo = 'error';
+              return;
+            }
+
+            // Criar novo usuário
+            const novoUsuario = {
+              nome: this.nome.trim(),
+              telefone: telefoneParaArmazenar,
+              email: this.email.toLowerCase(),
+              senha: this.senha,
+              perfil: 'professor', // Perfil automático como professor
+              created_at: new Date().toISOString()
+            };
+
+            console.log('Criando usuário:', { ...novoUsuario, senha: '[OCULTA]' });
+
+            const { data, error } = await window.supabaseClient
+              .from('usuario')
+              .insert([novoUsuario])
+              .select()
+              .single();
+
+            if (error) {
+              console.error('Erro ao criar usuário:', error);
+              throw error;
+            }
+
+            console.log('Usuário criado com sucesso:', data);
+
+            // Sucesso
+            this.mensagem = 'Conta criada com sucesso! Redirecionando para o login...';
+            this.mensagemTipo = 'success';
+
+            // Limpar formulário
+            this.nome = '';
+            this.telefone = '';
+            this.email = '';
+            this.senha = '';
+            this.confirmarSenha = '';
+            this.erros = {};
+
+            // Redirecionar para login após 2 segundos
+            setTimeout(() => {
+              window.location.href = 'index.html';
+            }, 2000);
+
+          } catch (error) {
+            console.error('Erro ao criar conta:', error);
+            
+            if (error.message.includes('duplicate key')) {
+              this.mensagem = 'Telefone ou email já estão em uso.';
+            } else if (error.message.includes('violates check constraint')) {
+              this.mensagem = 'Dados inválidos. Verifique as informações.';
+            } else {
+              this.mensagem = 'Erro ao criar conta. Tente novamente.';
+            }
+            this.mensagemTipo = 'error';
+          } finally {
+            this.carregando = false;
+          }
+        }
+      },
+      mounted() {
+        // Focar no campo de nome quando a página carregar
+        this.$nextTick(() => {
+          const nomeInput = document.getElementById('nome');
+          if (nomeInput) {
+            nomeInput.focus();
+          }
+        });
+      }
+    });
+  </script>
+
+  <!-- Supabase Client -->
+  <script src="supabaseClient.js"></script>
+
+  <!-- Theme Manager -->
+  <script src="theme-manager.js"></script>
+</body>
+</html>

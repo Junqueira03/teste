@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastrar Aluno - Escola One</title>
+  <link rel="stylesheet" href="design-system.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      background: hsl(var(--background));
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .header {
+      background: hsl(var(--card));
+      border-bottom: 1px solid hsl(var(--border));
+      padding: 1rem 2rem;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+      box-sizing: border-box;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo {
+      width: 50px;
+      height: 50px;
+      border-radius: calc(var(--radius) * 2);
+      overflow: hidden;
+      background: hsl(var(--primary) / 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+    }
+
+    .brand-text .brand {
+      color: hsl(var(--primary));
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .header-nav .nav-link {
+      color: hsl(var(--muted-foreground));
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+
+    .header-nav .nav-link:hover {
+      color: hsl(var(--primary));
+      background: hsl(var(--primary) / 0.1);
+    }
+
+    .header-nav .nav-link.active {
+      color: hsl(var(--primary));
+      background: hsl(var(--primary) / 0.1);
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-top: 70px;
+      padding: 2rem;
+      min-height: calc(100vh - 70px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .page-title-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .page-icon {
+      width: 48px;
+      height: 48px;
+      background: hsl(120 100% 95%);
+      color: hsl(120 100% 40%);
+      border-radius: calc(var(--radius) * 1.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    [data-theme="dark"] .page-icon {
+      background: hsl(120 100% 10%);
+      color: hsl(120 100% 60%);
+    }
+
+    .page-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .page-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+      margin: 0;
+    }
+
+    .page-subtitle {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+      margin: 0.25rem 0 0 0;
+    }
+
+    .back-button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Form Container */
+    .form-container {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) * 2);
+      padding: 2rem;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .form-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .form-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: hsl(var(--foreground));
+      margin: 0 0 0.5rem 0;
+    }
+
+    .form-description {
+      color: hsl(var(--muted-foreground));
+      margin: 0;
+    }
+
+    /* Form Sections */
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: hsl(var(--foreground));
+      margin: 0 0 1rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    /* Form Grid */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    /* Error States */
+    .form-group.error .input,
+    .form-group.error .select {
+      border-color: hsl(var(--destructive));
+    }
+
+    .form-group.error .input:focus,
+    .form-group.error .select:focus {
+      box-shadow: 0 0 0 2px hsl(var(--destructive) / 0.2);
+    }
+
+    .error-message {
+      color: hsl(var(--destructive));
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+
+    .form-group.error .error-message {
+      display: block;
+    }
+
+    /* Form Actions */
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      padding-top: 1.5rem;
+      border-top: 1px solid hsl(var(--border));
+      margin-top: 2rem;
+    }
+
+    /* Success Message */
+    .success-message {
+      background: hsl(120 100% 97%);
+      color: hsl(120 100% 25%);
+      border: 1px solid hsl(120 100% 40%);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+
+    [data-theme="dark"] .success-message {
+      background: hsl(120 100% 10%);
+      color: hsl(120 100% 80%);
+    }
+
+    /* Loading State */
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .btn.loading {
+      position: relative;
+    }
+
+    .btn.loading::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .header-nav {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 1rem;
+      }
+
+      .main-content {
+        padding: 1rem;
+        align-items: center;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .form-container {
+        padding: 1.5rem;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .form-actions {
+        flex-direction: column-reverse;
+      }
+
+      .form-actions .btn {
+        width: 100%;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+   <div class="header-left">
+      <div class="logo">
+        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background Circle -->
+          <circle cx="25" cy="25" r="25" fill="url(#logoGradient)"/>
+          
+          <!-- Book Icon -->
+          <path d="M15 18C15 16.8954 15.8954 16 17 16H33C34.1046 16 35 16.8954 35 18V32C35 33.1046 34.1046 34 33 34H17C15.8954 34 15 33.1046 15 32V18Z" fill="white" fill-opacity="0.9"/>
+          <path d="M18 20H32V22H18V20Z" fill="hsl(220 14% 96%)"/>
+          <path d="M18 24H28V26H18V24Z" fill="hsl(220 14% 96%)"/>
+          <path d="M18 28H30V30H18V28Z" fill="hsl(220 14% 96%)"/>
+          
+          <!-- Graduation Cap -->
+          <path d="M25 12L35 16L25 20L15 16L25 12Z" fill="white"/>
+          <path d="M32 18V22C32 23.1046 28.4183 24 25 24C21.5817 24 18 23.1046 18 22V18" stroke="white" stroke-width="1.5" fill="none"/>
+          
+          <!-- Number "1" -->
+          <circle cx="39" cy="12" r="6" fill="white" fill-opacity="0.9"/>
+          <text x="39" y="16" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="hsl(220 14% 20%)" text-anchor="middle">1</text>
+          
+          <!-- Gradient Definition -->
+          <defs>
+            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand">Escola</span> One
+      </div>
+    </div> 
+
+    <nav class="header-nav">
+      <a href="painel.html" class="nav-link">Home</a>
+      <a href="alunos.html" class="nav-link active">Alunos</a>
+      <a href="encarregados.html" class="nav-link">Encarregados</a>
+      <a href="professores.html" class="nav-link">Professores</a>
+      <a href="disciplinas.html" class="nav-link">Disciplinas</a>
+      <a href="turmas.html" class="nav-link">Turmas</a>
+      <a href="horarios.html" class="nav-link">Horários</a>
+      <a href="#" class="nav-link" onclick="if(confirm('Tem certeza que deseja sair do sistema?')) { authManager.logout(); } return false;">Logout</a>
+    </nav>
+  </header>
+
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="page-header">
+      <div class="page-title-section">
+        <div class="page-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="page-title">Cadastrar Aluno</h1>
+          <p class="page-subtitle">Adicione um novo aluno ao sistema</p>
+        </div>
+      </div>
+      <button class="btn btn-outline back-button" onclick="voltarParaLista()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Voltar à Lista
+      </button>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+      <div class="form-header">
+        <h2 class="form-title">Informações do Aluno</h2>
+        <p class="form-description">Preencha todos os campos obrigatórios para cadastrar o aluno</p>
+      </div>
+
+      <!-- Success Message -->
+      <div class="success-message" id="successMessage">
+        <strong>Sucesso!</strong> Aluno cadastrado com sucesso. Redirecionando...
+      </div>
+
+      <form id="cadastroForm" onsubmit="return salvarAluno(event)">
+        <!-- Personal Information Section -->
+        <div class="form-section">
+          <h3 class="section-title">Informações Pessoais</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="label required" for="numeroBilhete">Número do Bilhete</label>
+              <input 
+                type="text" 
+                id="numeroBilhete" 
+                name="numeroBilhete" 
+                class="input" 
+                placeholder="000000000BA000" 
+                required
+              >
+              <div class="error-message" id="numeroBilhete-error">Por favor, insira o número do bilhete.</div>
+            </div>
+
+            <div class="form-group">
+              <label class="label required" for="nome">Nome Completo</label>
+              <input 
+                type="text" 
+                id="nome" 
+                name="nome" 
+                class="input" 
+                placeholder="Digite o nome completo do aluno"
+                required
+              >
+              <div class="error-message" id="nome-error">Por favor, insira o nome completo do aluno.</div>
+            </div>
+
+            <div class="form-group">
+              <label class="label required" for="dataNascimento">Data de Nascimento</label>
+              <input 
+                type="date" 
+                id="dataNascimento" 
+                name="dataNascimento" 
+                class="input" 
+                required
+              >
+              <div class="error-message" id="dataNascimento-error">Por favor, selecione a data de nascimento.</div>
+            </div>
+
+            <div class="form-group">
+              <label class="label required" for="telefone">Telefone</label>
+              <input 
+                type="tel" 
+                id="telefone" 
+                name="telefone" 
+                class="input" 
+                placeholder="(11) 99999-9999" 
+                required
+              >
+              <div class="error-message" id="telefone-error">Por favor, insira um telefone válido.</div>
+            </div>
+
+          
+          </div>
+        </div>
+
+        <!-- Academic Information Section -->
+        <div class="form-section">
+          <h3 class="section-title">Informações Acadêmicas</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="label required" for="curso">Curso</label>
+              <select id="curso" name="curso" class="select" required>
+                <option value="">Selecione o curso</option>
+                <option value="Ensino Fundamental">Ensino Fundamental</option>
+                <option value="Ensino Médio">Ensino Médio</option>
+                <option value="Ensino Técnico">Ensino Técnico</option>
+                <option value="Ensino Superior">Ensino Superior</option>
+              </select>
+              <div class="error-message" id="curso-error">Por favor, selecione um curso.</div>
+            </div>
+
+            <div class="form-group">
+              <label class="label required" for="turma">Turma</label>
+              <select id="turma" name="turma" class="select" required>
+                <option value="">Carregando turmas...</option>
+              </select>
+              <div class="error-message" id="turma-error">Por favor, selecione uma turma.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="cancelarCadastro()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" id="submitButton">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+            Salvar Aluno
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // Supabase Configuration
+    const SUPABASE_URL = 'https://fsmnmggjklhxfkfnjxgc.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzbW5tZ2dqa2xoeGZrZm5qeGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2MDE0NTAsImV4cCI6MjA3MTE3NzQ1MH0.dMRH2DTAE8a1Vnyw9a8OiP5nTZetQy70hQgMV_a7jwo';
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
+    // Format phone number
+    function formatarTelefone(input) {
+      let value = input.value.replace(/\D/g, '');
+      if (value.length >= 11) {
+        value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+      } else if (value.length >= 7) {
+        value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+      } else if (value.length >= 3) {
+        value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+      }
+      input.value = value;
+    }
+
+    // Add phone formatting
+    document.getElementById('telefone').addEventListener('input', function() {
+      formatarTelefone(this);
+    });
+
+    // Validate field
+    function validarCampo(campo, mensagem) {
+      const input = document.getElementById(campo);
+      const formGroup = input.closest('.form-group');
+      const errorDiv = document.getElementById(campo + '-error');
+      
+      if (!input.value.trim()) {
+        formGroup.classList.add('error');
+        errorDiv.textContent = mensagem;
+        return false;
+      } else {
+        formGroup.classList.remove('error');
+        return true;
+      }
+    }
+
+    // Validate phone
+    function validarTelefone() {
+      const telefone = document.getElementById('telefone');
+      const formGroup = telefone.closest('.form-group');
+      const errorDiv = document.getElementById('telefone-error');
+      const telefoneRegex = /^\(\d{2}\) \d{4,5}-\d{4}$/;
+      
+      if (!telefoneRegex.test(telefone.value)) {
+        formGroup.classList.add('error');
+        errorDiv.textContent = 'Por favor, insira um telefone válido no formato (11) 99999-9999.';
+        return false;
+      } else {
+        formGroup.classList.remove('error');
+        return true;
+      }
+    }
+
+    // Save student to Supabase
+    async function salvarAluno(event) {
+      event.preventDefault();
+      
+      // Validate all fields
+      let isValid = true;
+      
+      isValid &= validarCampo('numeroBilhete', 'Por favor, insira o número do bilhete.');
+      isValid &= validarCampo('nome', 'Por favor, insira o nome completo do aluno.');
+      isValid &= validarCampo('dataNascimento', 'Por favor, selecione a data de nascimento.');
+      isValid &= validarTelefone();
+     // isValid &= validarCampo('bairro', 'Por favor, insira o bairro.');
+      isValid &= validarCampo('curso', 'Por favor, selecione um curso.');
+      isValid &= validarCampo('turma', 'Por favor, selecione uma turma.');
+      
+      if (!isValid) {
+        return false;
+      }
+
+      // Collect form data
+      const dadosAluno = {
+        numero_bilhete: document.getElementById('numeroBilhete').value.trim(),
+        nome: document.getElementById('nome').value.trim(),
+        data_nascimento: document.getElementById('dataNascimento').value,
+        telefone: document.getElementById('telefone').value.trim(),
+        //bairro: document.getElementById('bairro').value.trim(),
+        curso: document.getElementById('curso').value.trim(),
+        turma: document.getElementById('turma').value.trim(),
+        created_at: new Date().toISOString()
+      };
+
+      try {
+        // Show loading state
+        const submitButton = document.getElementById('submitButton');
+        const originalText = submitButton.innerHTML;
+        submitButton.classList.add('loading');
+        submitButton.disabled = true;
+        submitButton.innerHTML = 'Salvando...';
+
+        // Save to Supabase
+        const { data, error } = await supabaseClient
+          .from('alunos')
+          .insert([dadosAluno]);
+
+        if (error) {
+          throw error;
+        }
+
+        // Show success message
+        document.getElementById('successMessage').style.display = 'block';
+        
+        // Reset form
+        document.getElementById('cadastroForm').reset();
+        
+        // Redirect after delay
+        setTimeout(() => {
+          window.location.href = 'alunos.html';
+        }, 2000);
+
+      } catch (error) {
+        console.error('Erro ao cadastrar aluno:', error);
+        alert('Erro ao cadastrar aluno: ' + error.message);
+        
+        // Reset button state
+        const submitButton = document.getElementById('submitButton');
+        submitButton.classList.remove('loading');
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
+      }
+      
+      return false;
+    }
+
+    // Cancel registration
+    function cancelarCadastro() {
+      if (confirm('Tem certeza que deseja cancelar? Todos os dados inseridos serão perdidos.')) {
+        window.location.href = 'alunos.html';
+      }
+    }
+
+    // Go back to list
+    function voltarParaLista() {
+      window.location.href = 'alunos.html';
+    }
+
+    // Remove errors when user starts typing
+    document.querySelectorAll('.input, .select').forEach(input => {
+      input.addEventListener('input', function() {
+        const formGroup = this.closest('.form-group');
+        if (formGroup.classList.contains('error')) {
+          formGroup.classList.remove('error');
+        }
+      });
+    });
+
+    // Focus on first input when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      const firstInput = document.getElementById('numeroBilhete');
+      if (firstInput) {
+        firstInput.focus();
+      }
+    });
+
+    // Load turmas from Supabase
+    async function carregarTurmas() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('turma')
+          .select('id, nome')
+          .order('nome', { ascending: true });
+
+        if (error) {
+          throw error;
+        }
+
+        const turmaSelect = document.getElementById('turma');
+        turmaSelect.innerHTML = '<option value="">Selecione a turma</option>';
+        
+        data.forEach(turma => {
+          const option = document.createElement('option');
+          option.value = turma.nome;
+          option.textContent = turma.nome;
+          turmaSelect.appendChild(option);
+        });
+
+        // If no turmas found, show a message
+        if (data.length === 0) {
+          const option = document.createElement('option');
+          option.value = '';
+          option.textContent = 'Nenhuma turma cadastrada';
+          option.disabled = true;
+          turmaSelect.appendChild(option);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar turmas:', error);
+        const turmaSelect = document.getElementById('turma');
+        turmaSelect.innerHTML = '<option value="">Erro ao carregar turmas</option>';
+      }
+    }
+
+    // Load turmas when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      carregarTurmas();
+    });
+  </script>
+
+  <!-- Theme Manager -->
+  <script src="theme-manager.js"></script>
+  
+  <!-- Auth Manager -->
+  <script src="auth-manager.js"></script>
+  <script>
+    // Initialize auth manager and apply access control
+    document.addEventListener('DOMContentLoaded', function() {
+      const authManager = new AuthManager();
+      authManager.verificarAutenticacao();
+      authManager.aplicarControleAcesso();
+    });
+  </script>
+</body>
+</html>
