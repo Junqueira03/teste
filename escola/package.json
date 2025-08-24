@@ -1,0 +1,16 @@
+{
+  "name": "meuprojetokilocode",
+  "version": "1.0.0",
+  "description": "School Management System with SHADCN UI",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "live-server --port=3000"
+  },
+  "keywords": ["school", "management", "education", "shadcn"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}
