@@ -281,7 +281,7 @@
       </div>
     </div>
 
-    
+
         <!-- App Title -->
         <div class="app-title">
           <span class="brand">Escola</span> One
@@ -409,273 +409,214 @@
     </div>
   </div>
 
-  <script>
-    new Vue({
-      el: '#app',
-      data: {
-        telefone: '',
-        senha: '',
-        mensagem: '',
-        mensagemTipo: '',
-        mostrarRecuperar: false,
-        recuperarTelefone: '',
-        carregando: false
-      },
-      methods: {
-        // Formatar telefone em tempo real (Angola +244)
-        formatarTelefone() {
-          let value = this.telefone.replace(/\D/g, '');
-          // Limitar a 9 dígitos para Angola
-          if (value.length > 9) {
-            value = value.substring(0, 9);
-          }
-          // Formatação simples: 943 442 334
-          if (value.length >= 6) {
-            value = value.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1 $2 $3');
-          } else if (value.length >= 3) {
-            value = value.replace(/(\d{3})(\d{0,6})/, '$1 $2');
-          }
-          this.telefone = value.trim();
-        },
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        // Formatar telefone de recuperação (Angola +244)
-        formatarTelefoneRecuperacao() {
-          let value = this.recuperarTelefone.replace(/\D/g, '');
-          // Limitar a 9 dígitos para Angola
-          if (value.length > 9) {
-            value = value.substring(0, 9);
-          }
-          // Formatação simples: 943 442 334
-          if (value.length >= 6) {
-            value = value.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1 $2 $3');
-          } else if (value.length >= 3) {
-            value = value.replace(/(\d{3})(\d{0,6})/, '$1 $2');
-          }
-          this.recuperarTelefone = value.trim();
-        },
+<!-- 🔧 Inicialização do Supabase (adicione sua URL e chave aqui) -->
+<script>
+  const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co'; // <-- Substitua
+  const SUPABASE_ANON_KEY = 'SUA-CHAVE-ANON'; // <-- Substitua
 
-        // Fazer login com Supabase
-        async fazerLogin() {
-          // Limpar mensagens anteriores
-          this.mensagem = '';
-          this.mensagemTipo = '';
+  // Criação do client Supabase
+  window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
 
-          // Validar campos
-          if (!this.telefone || !this.senha) {
-            this.mensagem = 'Por favor, preencha todos os campos.';
-            this.mensagemTipo = 'error';
-            return;
-          }
-
-          // Validar formato do telefone (Angola +244)
-          const telefoneRegex = /^\d{3}\s\d{3}\s\d{3}$/;
-          if (!telefoneRegex.test(this.telefone)) {
-            this.mensagem = 'Por favor, insira um telefone válido no formato 943 442 334.';
-            this.mensagemTipo = 'error';
-            return;
-          }
-
-          this.carregando = true;
-
-          try {
-            // Remover espaços do telefone para a consulta
-            const telefoneParaConsulta = this.telefone.replace(/\s/g, '');
-            
-            console.log('Tentando login com telefone:', telefoneParaConsulta);
-
-            // Buscar usuário na tabela 'usuario' do Supabase
-            const { data, error } = await window.supabaseClient
-              .from('usuario')
-              .select('*')
-              .eq('telefone', telefoneParaConsulta)
-              .eq('senha', this.senha)
-              .single();
-
-            if (error) {
-              console.log('Erro na consulta Supabase:', error);
-              
-              // Se for erro de "não encontrado", mostrar mensagem amigável
-              if (error.code === 'PGRST116') {
-                this.mensagem = 'Telefone ou senha incorretos.';
-              } else {
-                this.mensagem = 'Erro ao conectar com o servidor. Tente novamente.';
-              }
-              this.mensagemTipo = 'error';
-              return;
-            }
-
-            if (!data) {
-              this.mensagem = 'Telefone ou senha incorretos.';
-              this.mensagemTipo = 'error';
-              return;
-            }
-
-            // Verificar se o usuário tem perfil válido ('admin' ou 'professor')
-            if (data.perfil !== 'admin' && data.perfil !== 'professor') {
-              this.mensagem = 'Acesso negado. Perfil de usuário inválido.';
-              this.mensagemTipo = 'error';
-              return;
-            }
-
-            // Sucesso no login - usuário autenticado
-            console.log(`Usuário ${data.perfil} autenticado:`, data);
-            
-            // Atualizar último login
-            try {
-              await window.supabaseClient
-                .from('usuario')
-                .update({ ultimo_login: new Date().toISOString() })
-                .eq('id', data.id);
-            } catch (updateError) {
-              console.warn('Erro ao atualizar último login:', updateError);
-              // Não bloquear o login por causa disso
-            }
-
-            // Salvar dados do usuário no localStorage
-            localStorage.setItem('usuarioLogado', JSON.stringify({
-              id: data.id,
-              nome: data.nome,
-              telefone: data.telefone,
-              email: data.email,
-              perfil: data.perfil,
-              tipo_usuario: 'admin' // Para compatibilidade com o sistema existente
-            }));
-
-            this.mensagem = 'Login realizado com sucesso! Redirecionando para o painel...';
-            this.mensagemTipo = 'success';
-            
-            // Redirecionar para o painel
-            setTimeout(() => {
-              window.location.href = 'painel.html';
-            }, 1500);
-
-          } catch (error) {
-            console.error('Erro no login:', error);
-            this.mensagem = 'Erro interno do servidor. Tente novamente.';
-            this.mensagemTipo = 'error';
-          } finally {
-            this.carregando = false;
-          }
-        },
-
-        // Recuperar senha
-        async recuperarSenha() {
-          // Limpar mensagens anteriores
-          this.mensagem = '';
-          this.mensagemTipo = '';
-
-          if (!this.recuperarTelefone) {
-            this.mensagem = 'Por favor, informe seu telefone.';
-            this.mensagemTipo = 'error';
-            return;
-          }
-
-          // Validar formato do telefone (Angola +244)
-          const telefoneRegex = /^\d{3}\s\d{3}\s\d{3}$/;
-          if (!telefoneRegex.test(this.recuperarTelefone)) {
-            this.mensagem = 'Por favor, insira um telefone válido no formato 943 442 334.';
-            this.mensagemTipo = 'error';
-            return;
-          }
-
-          this.carregando = true;
-
-          try {
-            let resultado;
-            
-            if (window.supabaseClient && window.supabaseClient.from) {
-              try {
-                // Usar o nome da tabela detectado automaticamente
-                const tableName = window.supabaseTableName || 'usuario';
-                
-                // Verificar se o telefone existe na base de dados
-                const { data: usuario, error } = await window.supabaseClient
-                  .from(tableName)
-                  .select('telefone, nome')
-                  .eq('telefone', this.recuperarTelefone)
-                  .single();
-
-                if (error) {
-                  if (error.code === 'PGRST116') {
-                    this.mensagem = 'Telefone não encontrado no sistema.';
-                    this.mensagemTipo = 'error';
-                  } else {
-                    throw error;
-                  }
-                  return;
-                }
-
-                resultado = {
-                  success: true,
-                  message: `Instruções para recuperar a senha foram enviadas para o telefone ${this.recuperarTelefone}.`
-                };
-              } catch (supabaseError) {
-                console.warn('Supabase não disponível, usando sistema demo:', supabaseError);
-                // Usar sistema demo se Supabase falhar
-                resultado = await window.authDemo.recuperarSenha(this.recuperarTelefone);
-              }
-            } else {
-              // Usar sistema demo se Supabase não estiver configurado
-              resultado = await window.authDemo.recuperarSenha(this.recuperarTelefone);
-            }
-
-            if (resultado.success) {
-              this.mensagem = resultado.message;
-              this.mensagemTipo = 'success';
-              
-              // Voltar ao formulário de login após delay
-              setTimeout(() => {
-                this.mostrarRecuperar = false;
-                this.recuperarTelefone = '';
-                this.mensagem = '';
-                this.mensagemTipo = '';
-              }, 4000);
-            } else {
-              this.mensagem = resultado.error;
-              this.mensagemTipo = 'error';
-            }
-
-          } catch (error) {
-            console.error('Erro na recuperação:', error);
-            this.mensagem = 'Erro interno do servidor. Tente novamente.';
-            this.mensagemTipo = 'error';
-          } finally {
-            this.carregando = false;
-          }
+<!-- Vue App -->
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+      telefone: '',
+      senha: '',
+      mensagem: '',
+      mensagemTipo: '',
+      mostrarRecuperar: false,
+      recuperarTelefone: '',
+      carregando: false
+    },
+    methods: {
+      formatarTelefone() {
+        let value = this.telefone.replace(/\D/g, '');
+        if (value.length > 9) value = value.substring(0, 9);
+        if (value.length >= 6) {
+          value = value.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1 $2 $3');
+        } else if (value.length >= 3) {
+          value = value.replace(/(\d{3})(\d{0,6})/, '$1 $2');
         }
+        this.telefone = value.trim();
       },
-      mounted() {
-        // Verificar se já está logado
-        const usuarioLogado = localStorage.getItem('usuarioLogado');
-        if (usuarioLogado) {
-          // Já está logado, redirecionar para o painel
-          window.location.href = 'painel.html';
+
+      formatarTelefoneRecuperacao() {
+        let value = this.recuperarTelefone.replace(/\D/g, '');
+        if (value.length > 9) value = value.substring(0, 9);
+        if (value.length >= 6) {
+          value = value.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1 $2 $3');
+        } else if (value.length >= 3) {
+          value = value.replace(/(\d{3})(\d{0,6})/, '$1 $2');
+        }
+        this.recuperarTelefone = value.trim();
+      },
+
+      async fazerLogin() {
+        this.mensagem = '';
+        this.mensagemTipo = '';
+
+        if (!this.telefone || !this.senha) {
+          this.mensagem = 'Por favor, preencha todos os campos.';
+          this.mensagemTipo = 'error';
           return;
         }
 
-        // Focar no campo de telefone quando a página carregar
-        this.$nextTick(() => {
-          const telefoneInput = document.getElementById('telefone');
-          if (telefoneInput) {
-            telefoneInput.focus();
+        const telefoneRegex = /^\d{3}\s\d{3}\s\d{3}$/;
+        if (!telefoneRegex.test(this.telefone)) {
+          this.mensagem = 'Por favor, insira um telefone válido no formato 943 442 334.';
+          this.mensagemTipo = 'error';
+          return;
+        }
+
+        this.carregando = true;
+
+        try {
+          const telefoneParaConsulta = this.telefone.replace(/\s/g, '');
+          console.log('Tentando login com telefone:', telefoneParaConsulta);
+
+          const { data, error } = await window.supabaseClient
+            .from('usuario')
+            .select('*')
+            .eq('telefone', telefoneParaConsulta)
+            .eq('senha', this.senha)
+            .single();
+
+          if (error) {
+            console.log('Erro na consulta Supabase:', error);
+            if (error.code === 'PGRST116') {
+              this.mensagem = 'Telefone ou senha incorretos.';
+            } else {
+              this.mensagem = 'Erro ao conectar com o servidor. Tente novamente.';
+            }
+            this.mensagemTipo = 'error';
+            return;
           }
-        });
+
+          if (!data) {
+            this.mensagem = 'Telefone ou senha incorretos.';
+            this.mensagemTipo = 'error';
+            return;
+          }
+
+          if (data.perfil !== 'admin' && data.perfil !== 'professor') {
+            this.mensagem = 'Acesso negado. Perfil de usuário inválido.';
+            this.mensagemTipo = 'error';
+            return;
+          }
+
+          console.log(`Usuário ${data.perfil} autenticado:`, data);
+
+          try {
+            await window.supabaseClient
+              .from('usuario')
+              .update({ ultimo_login: new Date().toISOString() })
+              .eq('id', data.id);
+          } catch (updateError) {
+            console.warn('Erro ao atualizar último login:', updateError);
+          }
+
+          localStorage.setItem('usuarioLogado', JSON.stringify({
+            id: data.id,
+            nome: data.nome,
+            telefone: data.telefone,
+            email: data.email,
+            perfil: data.perfil,
+            tipo_usuario: 'admin'
+          }));
+
+          this.mensagem = 'Login realizado com sucesso! Redirecionando...';
+          this.mensagemTipo = 'success';
+
+          setTimeout(() => {
+            window.location.href = 'painel.html';
+          }, 1500);
+
+        } catch (error) {
+          console.error('Erro no login:', error);
+          this.mensagem = 'Erro interno do servidor. Tente novamente.';
+          this.mensagemTipo = 'error';
+        } finally {
+          this.carregando = false;
+        }
+      },
+
+      async recuperarSenha() {
+        this.mensagem = '';
+        this.mensagemTipo = '';
+
+        if (!this.recuperarTelefone) {
+          this.mensagem = 'Por favor, informe seu telefone.';
+          this.mensagemTipo = 'error';
+          return;
+        }
+
+        const telefoneRegex = /^\d{3}\s\d{3}\s\d{3}$/;
+        if (!telefoneRegex.test(this.recuperarTelefone)) {
+          this.mensagem = 'Por favor, insira um telefone válido no formato 943 442 334.';
+          this.mensagemTipo = 'error';
+          return;
+        }
+
+        this.carregando = true;
+
+        try {
+          const telefone = this.recuperarTelefone.replace(/\s/g, '');
+          const { data: usuario, error } = await window.supabaseClient
+            .from('usuario')
+            .select('telefone, nome')
+            .eq('telefone', telefone)
+            .single();
+
+          if (error) {
+            if (error.code === 'PGRST116') {
+              this.mensagem = 'Telefone não encontrado no sistema.';
+              this.mensagemTipo = 'error';
+            } else {
+              throw error;
+            }
+            return;
+          }
+
+          this.mensagem = `Instruções para recuperar a senha foram enviadas para o telefone ${this.recuperarTelefone}.`;
+          this.mensagemTipo = 'success';
+
+          setTimeout(() => {
+            this.mostrarRecuperar = false;
+            this.recuperarTelefone = '';
+            this.mensagem = '';
+            this.mensagemTipo = '';
+          }, 4000);
+
+        } catch (error) {
+          console.error('Erro na recuperação:', error);
+          this.mensagem = 'Erro interno do servidor. Tente novamente.';
+          this.mensagemTipo = 'error';
+        } finally {
+          this.carregando = false;
+        }
       }
-    });
-  </script>
+    },
+    mounted() {
+      const usuarioLogado = localStorage.getItem('usuarioLogado');
+      if (usuarioLogado) {
+        window.location.href = 'painel.html';
+        return;
+      }
 
-  <!-- Theme Manager -->
-  <script src="theme-manager.js"></script>
+      this.$nextTick(() => {
+        const telefoneInput = document.getElementById('telefone');
+        if (telefoneInput) telefoneInput.focus();
+      });
+    }
+  });
+</script>
 
-  <!-- Authentication Demo -->
-  <script src="auth-demo.js"></script>
-
-  <!-- Authentication Manager -->
-  <script src="auth-manager.js"></script>
-
-  <!-- Supabase JS SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabaseClient.js"></script>
 </body>
 </html>
 
